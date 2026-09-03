@@ -46,14 +46,14 @@ function estimateStreamTokens(delta: string) {
 
 function formatRate(value: number) {
   if (!Number.isFinite(value) || value <= 0) return undefined
-  if (value >= 100) return `${Math.round(value)}`
-  if (value >= 10) return `${value.toFixed(1)}`
-  return `${value.toFixed(2)}`
+  if (value >= 100) return `${Math.round(value)} tok/s`
+  if (value >= 10) return `${value.toFixed(1)} tok/s`
+  return `${value.toFixed(2)} tok/s`
 }
 
 function formatTtft(value: number) {
   if (!Number.isFinite(value) || value < 0) return undefined
-  return `${value.toFixed(1)}s`
+  return `${value.toFixed(1)} s`
 }
 
 function activeDurationMs(samples: StreamSample[], tailAt?: number) {
