@@ -1,7 +1,16 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
   "name": "opencode-token-speed",
-  "version": "0.0.1",
+  "version": "0.0.2",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chenlongapps/opencode-token-speed.git"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "type": "module",
   "exports": {
     "./tui": {
