@@ -29,7 +29,7 @@ Requires `opencode >= 1.3.14`.
 
 ## Uninstallation
 
-Edit the OpenCode global configuration file at `~/.config/opencode/opencode.json` and remove `opencode-token-speed` from the `plugin` array. Then restart OpenCode.
+Remove the plugin configuration from `~/.config/opencode/tui.json`, then delete the local cache at `~/.cache/opencode/packages/opencode-token-speed@latest`.
 
 ## References
 

@@ -29,7 +29,7 @@ opencode plugin opencode-token-speed@latest --global
 
 ## 卸载
 
-编辑 OpenCode 全局配置文件 `~/.config/opencode/opencode.json`，从 `plugin` 数组中移除 `opencode-token-speed`，然后重启 OpenCode。
+从 `~/.config/opencode/tui.json` 删除插件配置，然后删除本地缓存 `~/.cache/opencode/packages/opencode-token-speed@latest`。
 
 ## 参考项目
 
