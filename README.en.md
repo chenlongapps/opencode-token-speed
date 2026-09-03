@@ -9,7 +9,7 @@ OpenCode TUI plugin that displays generation speed metrics in the session sideba
 
 ## Preview
 
-After opening the sidebar (Command Palette → **Show sidebar**), the metrics are displayed below the Context block:
+When the terminal width is > 120, the sidebar is shown and the metrics are displayed below the Context block:
 
 ![Preview](https://raw.githubusercontent.com/chenlongapps/opencode-token-speed/main/assets/demo.gif)
 

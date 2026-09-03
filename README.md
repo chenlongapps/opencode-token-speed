@@ -9,7 +9,7 @@ OpenCode TUI 插件:在会话侧边栏显示生成速度指标 —— 实时 TPS
 
 ## 显示效果
 
-打开侧边栏(命令面板 → "Show sidebar")后,在 Context 块下方显示:
+终端宽度 > 120 时显示侧边栏，指标位于 Context 块下方:
 
 ![演示效果](https://raw.githubusercontent.com/chenlongapps/opencode-token-speed/main/assets/demo.gif)
 
