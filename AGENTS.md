@@ -15,6 +15,21 @@
 - 使用 `npm pack --dry-run --json` 检查发布内容。软件包明确包含 `README.md`、`README.en.md` 和 `tui.tsx`。
 - CI 使用 Node 24.x。软件包采用 ESM（`"type": "module"`），并要求 OpenCode `>=1.3.14`。
 
+### 本地测试
+
+在仓库根目录执行 `npm ci`，然后创建 `.opencode/tui.json`（已有配置请合并）：
+
+```json
+{
+  "$schema": "https://opencode.ai/tui.json",
+  "plugin": ["../tui.tsx"]
+}
+```
+
+在仓库根目录运行 `opencode`，将终端宽度调至 > 120 列，让模型生成较长回复，检查侧边栏的 TPS、AVG 和 TTFT。
+
+修改 `tui.tsx` 后重启 OpenCode 即可，无需构建或发布。若已配置 npm 版插件，测试期间暂时移除其插件条目，避免冲突。
+
 ## 发布
 
 - 正式版本必须通过 GitHub Release 发布。`.github/workflows/publish.yml` 监听 `release.published` 事件并执行 npm 发布。
