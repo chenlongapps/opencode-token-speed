@@ -27,8 +27,16 @@ OpenCode TUI 插件：在会话侧边栏或输入框底部右侧显示生成速�
 
 ## 安装
 
+全局安装：
+
 ```bash
 opencode plugin opencode-token-speed@latest --global
+```
+
+项目级安装（在项目根目录执行）：
+
+```bash
+opencode plugin opencode-token-speed@latest
 ```
 
 要求 `opencode >= 1.3.14`。

@@ -27,8 +27,16 @@ Sidebar preview:
 
 ## Installation
 
+Global installation:
+
 ```bash
 opencode plugin opencode-token-speed@latest --global
+```
+
+Project-level installation (run from the project root):
+
+```bash
+opencode plugin opencode-token-speed@latest
 ```
 
 Requires `opencode >= 1.3.14`.
