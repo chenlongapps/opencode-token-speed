@@ -5,11 +5,17 @@
 
 [English](README.en.md)
 
-OpenCode TUI 插件:在会话侧边栏显示生成速度指标 —— 实时 TPS、会话平均 TPS、平均 TTFT。
+OpenCode TUI 插件：在会话侧边栏或输入框底部右侧显示生成速度指标 —— 实时 TPS、会话平均 TPS、平均 TTFT。
 
 ## 显示效果
 
-终端宽度 > 120 时显示侧边栏，指标位于 Context 块下方:
+- **侧边栏打开时**：指标位于 Context 块下方，在 Speed 区块中分三行显示，并保留 `tok/s` 和 `s` 单位。
+- **侧边栏关闭时**：指标在输入框底部、模型信息同一行的右侧显示，例如 `TPS: 42.0 · AVG: 38.5 · TTFT: 1.2`。
+- **空间不足时**：依次隐藏 TTFT、AVG，优先保留 TPS；极窄时截断显示，始终保持单行。空间恢复后自动显示更多指标。
+
+显示位置随侧边栏自动显隐、手动开关和终端尺寸变化自动切换，无需配置，统计数据不会因切换而重置。终端宽度 > 120 时，OpenCode 默认自动显示侧边栏。
+
+侧边栏显示效果：
 
 ![演示效果](https://raw.githubusercontent.com/chenlongapps/opencode-token-speed/main/assets/demo.gif)
 

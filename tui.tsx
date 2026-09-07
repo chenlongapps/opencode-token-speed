@@ -1,7 +1,7 @@
 /** @jsxImportSource @opentui/solid */
-import type { TextRenderable } from "@opentui/core"
+import type { BoxRenderable, TextRenderable } from "@opentui/core"
 import type { TuiPlugin, TuiPluginModule } from "@opencode-ai/plugin/tui"
-import { onCleanup } from "solid-js"
+import { createEffect, createSignal, onCleanup } from "solid-js"
 
 type StreamSample = {
   at: number
@@ -47,26 +47,32 @@ type TrackerState = {
   messageTimingByID: Record<string, MessageTiming>
   messageAverageByID: Record<string, MessageAverage>
   sessionAverageByID: Record<string, SessionAverage>
-  lastLiveTpsBySession: Record<string, string>
+  lastLiveTpsBySession: Record<string, number>
   sessionActiveAtByID: Record<string, number>
 }
 
 type TrackerListener = () => void
 
+type SpeedMetrics = {
+  live?: number
+  avg?: number
+  ttft?: number
+}
+
 function estimateStreamTokens(delta: string) {
   return Math.max(1, Math.ceil(utf8Encoder.encode(delta).byteLength / 5))
 }
 
-function formatRate(value: number) {
-  if (!Number.isFinite(value) || value <= 0) return undefined
-  if (value >= 100) return `${Math.round(value)} tok/s`
-  if (value >= 10) return `${value.toFixed(1)} tok/s`
-  return `${value.toFixed(2)} tok/s`
+function formatRate(value: number | undefined, includeUnit = false) {
+  if (value === undefined || !Number.isFinite(value) || value <= 0) return undefined
+  const formatted = value >= 100 ? `${Math.round(value)}` : value >= 10 ? value.toFixed(1) : value.toFixed(2)
+  return includeUnit ? `${formatted} tok/s` : formatted
 }
 
-function formatTtft(value: number) {
-  if (!Number.isFinite(value) || value < 0) return undefined
-  return `${value.toFixed(1)} s`
+function formatTtft(value: number | undefined, includeUnit = false) {
+  if (value === undefined || !Number.isFinite(value) || value < 0) return undefined
+  const formatted = value.toFixed(1)
+  return includeUnit ? `${formatted} s` : formatted
 }
 
 function activeDurationMs(samples: StreamSample[], tailAt?: number) {
@@ -95,25 +101,116 @@ function lastTimingActivity(timing: MessageTiming) {
 function SidebarSpeed(props: {
   api: Parameters<TuiPlugin>[0]
   sessionID: string
-  tracker: TrackerState
+  layout: "sidebar" | "inline"
+  visible?: boolean
+  metrics: (sessionID: string) => SpeedMetrics
   subscribe: (listener: TrackerListener) => () => void
+  mountSidebar?: (sessionID: string) => () => void
 }) {
   let liveText: TextRenderable | undefined
   let avgText: TextRenderable | undefined
   let ttftText: TextRenderable | undefined
+  let inlineBox: BoxRenderable | undefined
+  let inlineText: TextRenderable | undefined
+  let preferredWidth = 0
+  let lines = statusLines()
 
   const theme = () => props.api.theme.current
 
+  const inlineContent = (width: number) => {
+    const full = `${lines.live} · ${lines.avg} · ${lines.ttft}`
+    const rates = `${lines.live} · ${lines.avg}`
+    if (full.length <= width) return full
+    if (rates.length <= width) return rates
+    return lines.live
+  }
+
+  const syncInline = () => {
+    if (!inlineBox) return
+    // The ref callback can run before Yoga has produced a computed width.
+    // Start with the full content and let the first resize pass choose the
+    // compact form when the parent constrains this slot.
+    const availableWidth = inlineBox.width > 0 ? inlineBox.width : Number.POSITIVE_INFINITY
+    const content = inlineContent(availableWidth)
+    if (inlineText) inlineText.content = content
+    const width = content.length
+    if (width !== preferredWidth) {
+      preferredWidth = width
+      inlineBox.flexBasis = width
+    }
+  }
+
+  const onRendererResize = () => {
+    if (!inlineBox) return
+    const content = inlineContent(Number.POSITIVE_INFINITY)
+    if (inlineText) inlineText.content = content
+    const width = content.length
+    if (width !== preferredWidth) {
+      preferredWidth = width
+      inlineBox.flexBasis = width
+    }
+  }
+
   const sync = () => {
-    const lines = statusLines()
+    lines = statusLines()
     if (liveText) liveText.content = lines.live
     if (avgText) avgText.content = lines.avg
     if (ttftText) ttftText.content = lines.ttft
+    syncInline()
     props.api.renderer.requestRender()
   }
 
   const unsubscribe = props.subscribe(sync)
   onCleanup(unsubscribe)
+
+  createEffect(() => {
+    const release = props.mountSidebar?.(props.sessionID)
+    if (release) onCleanup(release)
+  })
+  createEffect(() => {
+    props.visible
+    sync()
+  })
+
+  if (props.layout === "inline") {
+    // Keep a stable slot root even while hidden: some host versions discard
+    // slot contributions whose initial output is empty.
+    // A compact basis can otherwise keep its old width across a terminal resize.
+    const renderer = props.api.renderer as unknown as {
+      on: (event: "resize", listener: () => void) => void
+      off: (event: "resize", listener: () => void) => void
+    }
+    renderer.on("resize", onRendererResize)
+    onCleanup(() => renderer.off("resize", onRendererResize))
+    return (
+      <box
+        visible={props.visible !== false}
+        height={1}
+        minWidth={0}
+        maxWidth="100%"
+        flexGrow={0}
+        flexShrink={1}
+        overflow="hidden"
+        onSizeChange={syncInline}
+        ref={(ref: BoxRenderable) => {
+          inlineBox = ref
+          sync()
+        }}
+      >
+        <text
+          fg={theme().textMuted}
+          width="100%"
+          height={1}
+          wrapMode="none"
+          truncate
+          ref={(ref: TextRenderable) => {
+            inlineText = ref
+            syncInline()
+          }}
+        />
+      </box>
+    )
+  }
 
   return (
     <box>
@@ -150,42 +247,13 @@ function SidebarSpeed(props: {
     </box>
   )
 
-  function sessionAverage() {
-    const totals = props.tracker.sessionAverageByID[props.sessionID]
-    if (!totals || totals.totalTokens <= 0 || totals.totalDurationMs < MIN_SESSION_DURATION_MS) return undefined
-    return formatRate(totals.totalTokens / (totals.totalDurationMs / 1000))
-  }
-
-  function sessionTtft() {
-    const totals = props.tracker.sessionAverageByID[props.sessionID]
-    if (!totals || totals.messageCount <= 0 || totals.totalTtftMs < 0) return undefined
-    return formatTtft(totals.totalTtftMs / totals.messageCount / 1000)
-  }
-
-  function liveTps() {
-    const lastValue = () => props.tracker.lastLiveTpsBySession[props.sessionID]
-    const status = props.api.state.session.status(props.sessionID)
-    if (status?.type === "idle") return lastValue()
-    const samples = props.tracker.streamSamplesBySession[props.sessionID] ?? []
-    if (samples.length === 0) return lastValue()
-    const now = Date.now()
-    const relevant = samples.filter((sample) => now - sample.at <= STREAM_WINDOW_MS)
-    if (relevant.length === 0) return lastValue()
-    const lastSample = relevant[relevant.length - 1]
-    if (!lastSample || now - lastSample.at > LIVE_STALE_MS) return lastValue()
-    const total = relevant.reduce((sum, sample) => sum + sample.tokens, 0)
-    const durationSeconds = activeDurationMs(relevant, now) / 1000
-    if (durationSeconds <= 0) return lastValue()
-    const value = formatRate(total / durationSeconds)
-    if (value) props.tracker.lastLiveTpsBySession[props.sessionID] = value
-    return value
-  }
-
   function statusLines() {
+    const metrics = props.metrics(props.sessionID)
+    const includeUnits = props.layout === "sidebar"
     return {
-      live: `TPS: ${liveTps() ?? "-"}`,
-      avg: `AVG: ${sessionAverage() ?? "-"}`,
-      ttft: `TTFT: ${sessionTtft() ?? "-"}`,
+      live: `TPS: ${formatRate(metrics.live, includeUnits) ?? "-"}`,
+      avg: `AVG: ${formatRate(metrics.avg, includeUnits) ?? "-"}`,
+      ttft: `TTFT: ${formatTtft(metrics.ttft, includeUnits) ?? "-"}`,
     }
   }
 }
@@ -201,6 +269,54 @@ const tui: TuiPlugin = async (api) => {
   }
 
   const listeners = new Set<TrackerListener>()
+  const [sidebarMounts, setSidebarMounts] = createSignal<Record<string, number>>({})
+
+  const subscribe = (listener: TrackerListener) => {
+    listeners.add(listener)
+    return () => {
+      listeners.delete(listener)
+    }
+  }
+
+  const mountSidebar = (sessionID: string) => {
+    setSidebarMounts((counts) => ({ ...counts, [sessionID]: (counts[sessionID] ?? 0) + 1 }))
+    return () => {
+      setSidebarMounts((counts) => {
+        const next = { ...counts }
+        if (next[sessionID] > 1) next[sessionID]--
+        else delete next[sessionID]
+        return next
+      })
+    }
+  }
+
+  const updateLiveTps = (sessionID: string, now = Date.now()) => {
+    if (api.state.session.status(sessionID)?.type === "idle") return
+    const samples = tracker.streamSamplesBySession[sessionID] ?? []
+    const relevant = samples.filter((sample) => now - sample.at <= STREAM_WINDOW_MS)
+    const lastSample = relevant[relevant.length - 1]
+    if (!lastSample || now - lastSample.at > LIVE_STALE_MS) return
+    const total = relevant.reduce((sum, sample) => sum + sample.tokens, 0)
+    const durationSeconds = activeDurationMs(relevant, now) / 1000
+    if (durationSeconds <= 0) return
+    const value = total / durationSeconds
+    if (Number.isFinite(value) && value > 0) tracker.lastLiveTpsBySession[sessionID] = value
+  }
+
+  const metrics = (sessionID: string): SpeedMetrics => {
+    const totals = tracker.sessionAverageByID[sessionID]
+    return {
+      live: tracker.lastLiveTpsBySession[sessionID],
+      avg:
+        totals && totals.totalTokens > 0 && totals.totalDurationMs >= MIN_SESSION_DURATION_MS
+          ? totals.totalTokens / (totals.totalDurationMs / 1000)
+          : undefined,
+      ttft:
+        totals && totals.messageCount > 0 && totals.totalTtftMs >= 0
+          ? totals.totalTtftMs / totals.messageCount / 1000
+          : undefined,
+    }
+  }
 
   let bumpTimer: ReturnType<typeof setTimeout> | undefined
 
@@ -208,6 +324,9 @@ const tui: TuiPlugin = async (api) => {
     if (bumpTimer !== undefined) return
     bumpTimer = setTimeout(() => {
       bumpTimer = undefined
+      // Cache the live rate even when neither display is mounted.
+      const now = Date.now()
+      for (const sessionID of Object.keys(tracker.streamSamplesBySession)) updateLiveTps(sessionID, now)
       for (const listener of listeners) listener()
     }, BUMP_THROTTLE_MS)
   }
@@ -408,8 +527,8 @@ const tui: TuiPlugin = async (api) => {
         removeMessageAverage(messageID, sessionID)
       }
       if (elapsedMs < SHORT_MESSAGE_OFFICIAL_TPS_MS && totalTokens > 0) {
-        const value = formatRate(totalTokens / (durationMs / 1000))
-        if (value) {
+        const value = totalTokens / (durationMs / 1000)
+        if (Number.isFinite(value) && value > 0) {
           tracker.lastLiveTpsBySession[sessionID] = value
           clearLiveSamples(sessionID)
         }
@@ -510,6 +629,9 @@ const tui: TuiPlugin = async (api) => {
       bumpTimer = undefined
     }
     clearInterval(timer)
+    listeners.clear()
+    setSidebarMounts({})
+    for (const sessionID of Object.keys(tracker.sessionActiveAtByID)) clearSession(sessionID)
   })
 
   api.slots.register({
@@ -520,13 +642,22 @@ const tui: TuiPlugin = async (api) => {
           <SidebarSpeed
             api={api}
             sessionID={value.session_id}
-            tracker={tracker}
-            subscribe={(listener) => {
-              listeners.add(listener)
-              return () => {
-                listeners.delete(listener)
-              }
-            }}
+            layout="sidebar"
+            metrics={metrics}
+            subscribe={subscribe}
+            mountSidebar={mountSidebar}
+          />
+        )
+      },
+      session_prompt_right(_ctx, value) {
+        return (
+          <SidebarSpeed
+            api={api}
+            sessionID={value.session_id}
+            layout="inline"
+            visible={!sidebarMounts()[value.session_id]}
+            metrics={metrics}
+            subscribe={subscribe}
           />
         )
       },
