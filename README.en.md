@@ -41,9 +41,36 @@ opencode plugin opencode-token-speed@latest
 
 Requires `opencode >= 1.3.14`.
 
-## Uninstallation
+## Uninstallation and Cache Refresh
 
-Remove the plugin configuration from `~/.config/opencode/tui.json`, then delete the local cache at `~/.cache/opencode/packages/opencode-token-speed@latest`.
+Remove the plugin configuration from OpenCode, then delete the plugin cache directory. OpenCode's official documentation lists the default cache root as `~/.cache/opencode` on macOS/Linux and `%USERPROFILE%\.cache\opencode` on Windows. Depending on the OpenCode version, npm plugins may be stored under either `packages/...@latest` or `node_modules/...`.
+
+Quit OpenCode, then run the command for your platform to remove this plugin's cache:
+
+macOS/Linux:
+
+```bash
+rm -rf ~/.cache/opencode/packages/opencode-token-speed@latest
+rm -rf ~/.cache/opencode/node_modules/opencode-token-speed
+```
+
+Windows PowerShell:
+
+```powershell
+Remove-Item -Recurse -Force "$env:USERPROFILE\.cache\opencode\packages\opencode-token-speed@latest" -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "$env:USERPROFILE\.cache\opencode\node_modules\opencode-token-speed" -ErrorAction SilentlyContinue
+```
+
+Windows Command Prompt:
+
+```bat
+rmdir /s /q "%USERPROFILE%\.cache\opencode\packages\opencode-token-speed@latest"
+rmdir /s /q "%USERPROFILE%\.cache\opencode\node_modules\opencode-token-speed"
+```
+
+When using Windows with WSL, run the macOS/Linux command inside WSL. If neither plugin directory exists, follow the official documentation and delete the entire cache root for your platform, then restart OpenCode to reinstall the plugin.
+
+References: [OpenCode plugin documentation](https://opencode.ai/docs/plugins/#how-plugins-are-installed) and [OpenCode troubleshooting documentation](https://opencode.ai/docs/troubleshooting/#clear-the-cache).
 
 ## References
 

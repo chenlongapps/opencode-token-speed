@@ -41,9 +41,36 @@ opencode plugin opencode-token-speed@latest
 
 要求 `opencode >= 1.3.14`。
 
-## 卸载
+## 卸载和刷新缓存
 
-从 `~/.config/opencode/tui.json` 删除插件配置，然后删除本地缓存 `~/.cache/opencode/packages/opencode-token-speed@latest`。
+从 OpenCode 配置中删除插件配置，然后删除插件缓存目录。OpenCode 官方文档给出的默认缓存根目录为：macOS/Linux 使用 `~/.cache/opencode`，Windows 使用 `%USERPROFILE%\.cache\opencode`。不同 OpenCode 版本的 npm 插件子目录可能是 `packages/...@latest` 或 `node_modules/...`。
+
+退出 OpenCode 后，按系统执行以下命令，删除本插件的缓存：
+
+macOS/Linux：
+
+```bash
+rm -rf ~/.cache/opencode/packages/opencode-token-speed@latest
+rm -rf ~/.cache/opencode/node_modules/opencode-token-speed
+```
+
+Windows PowerShell：
+
+```powershell
+Remove-Item -Recurse -Force "$env:USERPROFILE\.cache\opencode\packages\opencode-token-speed@latest" -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "$env:USERPROFILE\.cache\opencode\node_modules\opencode-token-speed" -ErrorAction SilentlyContinue
+```
+
+Windows 命令提示符：
+
+```bat
+rmdir /s /q "%USERPROFILE%\.cache\opencode\packages\opencode-token-speed@latest"
+rmdir /s /q "%USERPROFILE%\.cache\opencode\node_modules\opencode-token-speed"
+```
+
+Windows 使用 WSL 时，请在 WSL 中执行 macOS/Linux 命令。如果上述插件目录都不存在，可按官方文档删除对应平台的整个缓存根目录，然后重启 OpenCode 重新安装插件。
+
+参考：[OpenCode 插件文档](https://opencode.ai/docs/plugins/#how-plugins-are-installed) 和 [OpenCode 故障排查文档](https://opencode.ai/docs/troubleshooting/#clear-the-cache)。
 
 ## 参考项目
 
