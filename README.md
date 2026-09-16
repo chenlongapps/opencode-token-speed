@@ -1,78 +1,86 @@
-# opencode-token-speed
+# OpenCode Token Speed
 
 [![OpenCode](https://img.shields.io/badge/OpenCode-%E2%89%A51.3.14-blue?style=flat-square)](https://opencode.ai/)
 [![npm version](https://img.shields.io/npm/v/opencode-token-speed?logo=npm&style=flat-square)](https://www.npmjs.com/package/opencode-token-speed)
 
-[English](README.en.md)
+[中文](README.zh-CN.md)
 
-OpenCode TUI 插件：在会话侧边栏或输入框底部右侧显示生成速度指标 —— 实时 TPS、会话平均 TPS、平均 TTFT。
+A lightweight OpenCode plugin that shows real-time LLM generation speed metrics directly in your terminal.
 
-## 显示效果
+Track:
 
-- **侧边栏打开时**：指标位于 Context 块下方，在 Speed 区块中分三行显示，并保留 `tok/s` 和 `s` 单位。
-- **侧边栏关闭时**：指标在输入框底部、模型信息同一行的右侧显示，例如 `TPS: 42.0 · AVG: 38.5 · TTFT: 1.2`。
-- **空间不足时**：依次隐藏 TTFT、AVG，优先保留 TPS；极窄时截断显示，始终保持单行。空间恢复后自动显示更多指标。
+- TPS (tokens per second)
+- Average TPS
+- TTFT (time to first token)
 
-显示位置随侧边栏自动显隐、手动开关和终端尺寸变化自动切换，无需配置，统计数据不会因切换而重置。终端宽度 > 120 时，OpenCode 默认自动显示侧边栏。
+Works with OpenCode TUI sidebar and status area.
 
-侧边栏显示效果：
+## Preview
 
-![演示效果](https://raw.githubusercontent.com/chenlongapps/opencode-token-speed/main/assets/demo.gif)
+- **Sidebar open**: Metrics appear below the Context block, on three lines in the Speed section, with the `tok/s` and `s` units.
+- **Sidebar closed**: Metrics appear at the bottom right of the prompt, on the same row as the model information, for example `TPS: 42.0 · AVG: 38.5 · TTFT: 1.2`.
+- **Limited space**: TTFT is hidden first, then AVG, keeping TPS as the priority. Extremely narrow layouts truncate the text to stay on one line. More metrics reappear automatically when space becomes available.
 
-- **TPS**：实时生成速度
-- **AVG**：本会话平均生成速度
-- **TTFT**：本会话平均首 token 延迟
+The display follows automatic sidebar visibility, manual toggles, and terminal resizing without configuration or resetting the statistics. By default, OpenCode automatically shows the sidebar when the terminal is wider than 120 columns.
 
-> 注：TTFT/TPS 均为估算值，实际数值可能因模型、网络和运行环境而有所差异。
+Sidebar preview:
 
-## 安装
+![Preview](https://raw.githubusercontent.com/chenlongapps/opencode-token-speed/main/assets/demo.gif)
 
-全局安装：
+- **TPS**: Real-time generation speed
+- **AVG**: Average generation speed for the current session
+- **TTFT**: Average time to first token for the current session
+
+> Note: TTFT/TPS are estimates. Actual values may vary depending on the model, network, and runtime environment.
+
+## Installation
+
+Global installation:
 
 ```bash
 opencode plugin opencode-token-speed@latest --global
 ```
 
-项目级安装（在项目根目录执行）：
+Project-level installation (run from the project root):
 
 ```bash
 opencode plugin opencode-token-speed@latest
 ```
 
-要求 `opencode >= 1.3.14`。
+Requires `opencode >= 1.3.14`.
 
-## 卸载和刷新缓存
+## Uninstallation and Cache Refresh
 
-从 OpenCode 配置中删除插件配置，然后删除插件缓存目录。OpenCode 官方文档给出的默认缓存根目录为：macOS/Linux 使用 `~/.cache/opencode`，Windows 使用 `%USERPROFILE%\.cache\opencode`。不同 OpenCode 版本的 npm 插件子目录可能是 `packages/...@latest` 或 `node_modules/...`。
+Remove the plugin configuration from OpenCode, then delete the plugin cache directory. OpenCode's official documentation lists the default cache root as `~/.cache/opencode` on macOS/Linux and `%USERPROFILE%\.cache\opencode` on Windows. Depending on the OpenCode version, npm plugins may be stored under either `packages/...@latest` or `node_modules/...`.
 
-退出 OpenCode 后，按系统执行以下命令，删除本插件的缓存：
+Quit OpenCode, then run the command for your platform to remove this plugin's cache:
 
-macOS/Linux：
+macOS/Linux:
 
 ```bash
 rm -rf ~/.cache/opencode/packages/opencode-token-speed@latest
 rm -rf ~/.cache/opencode/node_modules/opencode-token-speed
 ```
 
-Windows PowerShell：
+Windows PowerShell:
 
 ```powershell
 Remove-Item -Recurse -Force "$env:USERPROFILE\.cache\opencode\packages\opencode-token-speed@latest" -ErrorAction SilentlyContinue
 Remove-Item -Recurse -Force "$env:USERPROFILE\.cache\opencode\node_modules\opencode-token-speed" -ErrorAction SilentlyContinue
 ```
 
-Windows 命令提示符：
+Windows Command Prompt:
 
 ```bat
 rmdir /s /q "%USERPROFILE%\.cache\opencode\packages\opencode-token-speed@latest"
 rmdir /s /q "%USERPROFILE%\.cache\opencode\node_modules\opencode-token-speed"
 ```
 
-Windows 使用 WSL 时，请在 WSL 中执行 macOS/Linux 命令。如果上述插件目录都不存在，可按官方文档删除对应平台的整个缓存根目录，然后重启 OpenCode 重新安装插件。
+When using Windows with WSL, run the macOS/Linux command inside WSL. If neither plugin directory exists, follow the official documentation and delete the entire cache root for your platform, then restart OpenCode to reinstall the plugin.
 
-参考：[OpenCode 插件文档](https://opencode.ai/docs/plugins/#how-plugins-are-installed) 和 [OpenCode 故障排查文档](https://opencode.ai/docs/troubleshooting/#clear-the-cache)。
+References: [OpenCode plugin documentation](https://opencode.ai/docs/plugins/#how-plugins-are-installed) and [OpenCode troubleshooting documentation](https://opencode.ai/docs/troubleshooting/#clear-the-cache).
 
-## 参考项目
+## References
 
 - https://github.com/Tarquinen/oc-tps
 - https://github.com/ChiR24/opencode-tps-meter
