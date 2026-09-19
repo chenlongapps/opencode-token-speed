@@ -1,11 +1,13 @@
 # OpenCode Token Speed
 
-[![OpenCode](https://img.shields.io/badge/OpenCode-%E2%89%A51.3.14-blue?style=flat-square)](https://opencode.ai/)
+[![OpenCode >=1.3.14 <2.0.0](https://img.shields.io/badge/OpenCode-%E2%89%A51.3.14%20%3C2.0.0-blue?style=flat-square)](https://opencode.ai/)
 [![npm version](https://img.shields.io/npm/v/opencode-token-speed?logo=npm&style=flat-square)](https://www.npmjs.com/package/opencode-token-speed)
 
 [English](README.md)
 
 一个轻量级的 OpenCode 插件，可直接在终端中显示实时 LLM 生成速度指标。
+
+> **本插件仅支持在 OpenCode v1 中安装。OpenCode v2 已默认支持 TPS 显示，无需安装本插件。**
 
 可查看：
 
@@ -47,7 +49,7 @@ opencode plugin opencode-token-speed@latest --global
 opencode plugin opencode-token-speed@latest
 ```
 
-要求 `opencode >= 1.3.14`。
+要求 OpenCode v1（`>=1.3.14 <2.0.0`）。
 
 ## 卸载和刷新缓存
 

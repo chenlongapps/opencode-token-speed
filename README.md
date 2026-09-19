@@ -1,11 +1,13 @@
 # OpenCode Token Speed
 
-[![OpenCode](https://img.shields.io/badge/OpenCode-%E2%89%A51.3.14-blue?style=flat-square)](https://opencode.ai/)
+[![OpenCode >=1.3.14 <2.0.0](https://img.shields.io/badge/OpenCode-%E2%89%A51.3.14%20%3C2.0.0-blue?style=flat-square)](https://opencode.ai/)
 [![npm version](https://img.shields.io/npm/v/opencode-token-speed?logo=npm&style=flat-square)](https://www.npmjs.com/package/opencode-token-speed)
 
 [中文](README.zh-CN.md)
 
 A lightweight OpenCode plugin that shows real-time LLM generation speed metrics directly in your terminal.
+
+> **This plugin can only be installed in OpenCode v1. OpenCode v2 displays TPS by default, so this plugin is unnecessary.**
 
 Track:
 
@@ -47,7 +49,7 @@ Project-level installation (run from the project root):
 opencode plugin opencode-token-speed@latest
 ```
 
-Requires `opencode >= 1.3.14`.
+Requires OpenCode v1 (`>=1.3.14 <2.0.0`).
 
 ## Uninstallation and Cache Refresh
 
