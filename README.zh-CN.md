@@ -7,7 +7,8 @@
 
 一个轻量级的 OpenCode 插件，可直接在终端中显示实时 LLM 生成速度指标。
 
-> **本插件仅支持在 OpenCode v1 中安装。OpenCode v2 已默认支持 TPS 显示，无需安装本插件。**
+> [!WARNING]
+> 本项目仅支持 OpenCode v1，现已停止维护，并将于近期归档。如需支持 OpenCode v2，请改用 [opencode-token-usage](https://github.com/chenlongapps/opencode-token-usage)。
 
 可查看：
 

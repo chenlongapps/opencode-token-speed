@@ -7,7 +7,8 @@
 
 A lightweight OpenCode plugin that shows real-time LLM generation speed metrics directly in your terminal.
 
-> **This plugin can only be installed in OpenCode v1. OpenCode v2 displays TPS by default, so this plugin is unnecessary.**
+> [!WARNING]
+> This project only supports OpenCode v1, is no longer maintained, and will be archived soon. For OpenCode v2, use [opencode-token-usage](https://github.com/chenlongapps/opencode-token-usage) instead.
 
 Track:
 
